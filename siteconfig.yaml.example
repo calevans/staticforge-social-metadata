@@ -1,0 +1,9 @@
+site:
+  title: "My Static Site"
+  name: "My Site Name"
+  description: "A description of my static site."
+
+social:
+  enabled: true
+  default_image: "/images/default-social.jpg"
+  twitter_handle: "@myhandle"
