@@ -1,6 +1,6 @@
 # Social Metadata Feature
 
-Welcome to the Social Metadata feature! We know how important it is for your content to look great when shared on social media. Whether it's a link dropped in Slack, a tweet, or a Facebook post, you want that rich preview card with a nice image and title.
+Welcome to the [StaticForge](https://calevans.com/staticforge) Social Metadata feature! We know how important it is for your content to look great when shared on social media. Whether it's a link dropped in Slack, a tweet, or a Facebook post, you want that rich preview card with a nice image and title.
 
 This feature handles all the heavy lifting for you. It automatically generates Open Graph (Facebook, LinkedIn, etc.) and Twitter Card metadata tags and injects them right into your page's `<head>`.
 
