@@ -47,6 +47,7 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
     public function register(EventManager $eventManager, Container $container): void
     {
         parent::register($eventManager, $container);
+        $eventManager->registerListener('SEO_AUDIT_PAGE', [$this, 'auditPage']);
 
         $this->logger = $container->get('logger');
         $this->generator = new MetadataGenerator();
@@ -91,5 +92,44 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
         }
 
         return $parameters;
+    }
+
+    /**
+     * Audit page for missing social metadata
+     *
+     * @param Container $container
+     * @param array $params
+     * @return array
+     */
+    public function auditPage(Container $container, array $params): array
+    {
+        $crawler = $params['crawler'];
+        $filename = $params['filename'];
+        $issues = $params['issues'];
+
+        $checks = [
+            'og:title' => 'property',
+            'og:description' => 'property',
+            'og:image' => 'property',
+            'og:url' => 'property',
+            'twitter:card' => 'name',
+            'twitter:title' => 'name',
+            'twitter:description' => 'name',
+            'twitter:image' => 'name',
+        ];
+
+        foreach ($checks as $tag => $attribute) {
+            $count = $crawler->filter("meta[$attribute='$tag']")->count();
+            if ($count === 0) {
+                $issues[] = [
+                    'file' => $filename,
+                    'type' => 'warning',
+                    'message' => "Missing <meta $attribute=\"$tag\"> tag",
+                ];
+            }
+        }
+
+        $params['issues'] = $issues;
+        return $params;
     }
 }
