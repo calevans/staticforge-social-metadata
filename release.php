@@ -27,7 +27,7 @@ if ($argc !== 2) {
         echo "\n";
     }
 
-    echo "Usage: lando php bin/release.php <version>\n";
+    echo "Usage: php bin/release.php <version>\n";
     exit(1);
 }
 
@@ -39,7 +39,7 @@ if (!preg_match('/^\d+\.\d+\.\d+$/', $version)) {
     exit(1);
 }
 
-$composerFile = __DIR__ . '/../composer.json';
+$composerFile = __DIR__ . '/composer.json';
 if (!file_exists($composerFile)) {
     echo "Error: composer.json not found\n";
     exit(1);
@@ -120,9 +120,9 @@ if (in_array($version, $tags)) {
     $tagMessage = "Release $version\n\n" . implode("\n", $commits);
     $tempMsgFile = tempnam(sys_get_temp_dir(), 'sf_release');
     file_put_contents($tempMsgFile, $tagMessage);
-    
+
     runCommand("git tag -a {$version} -F {$tempMsgFile}");
-    
+
     unlink($tempMsgFile);
     echo "✅ Created annotated tag {$version}\n";
 }

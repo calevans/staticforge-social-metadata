@@ -10,7 +10,7 @@ This feature handles all the heavy lifting for you. It automatically generates O
 
 You don't need to do anything special. StaticForge looks at the frontmatter you're already writing for your pages and uses it to build the metadata.
 
-1.  **You Write Content**: Add standard fields like `title`, `description`, and `image` to your page's frontmatter.
+1.  **You Write Content**: Add standard fields like `title`, `description`, and `hero` (or `image`) to your page's frontmatter.
 2.  **We Generate Tags**: During the build process, we convert that data into `<meta property="og:title">`, `<meta name="twitter:card">`, and more.
 3.  **We Inject**: We find the `</head>` tag in your HTML and slip those meta tags in right before it closes.
 
@@ -39,29 +39,30 @@ We also use your main `site.name` from `siteconfig.yaml` to populate the `og:sit
 
 ## Usage in Content
 
+StaticForge is smart about finding your metadata. It looks for specific `social` overrides first, then falls back to your standard frontmatter.
+
 Here is what your Markdown frontmatter might look like:
 
 ```yaml
 ---
 title: "My Awesome Blog Post"
 description: "Learn how to build static sites with PHP."
+hero: "/assets/images/posts/static-sites.jpg" # Standard image field
+author: "@calevans"
 type: "article"
 
-# Dedicated Social Block
+# Optional: Dedicated Social Block for overrides
 social:
-  image: "/assets/images/posts/static-sites.jpg"        # Generic fallback
-  twitter_image: "/assets/images/posts/twitter-2x1.jpg" # Specific override
-  facebook_image: "/assets/images/posts/og-1200.jpg"    # Specific override
   title: "Clickbait Title"                              # Override page title
   description: "Short summary"                          # Override page description
-  image_alt: "A screenshot of code"                     # Alt text for accessibility
-  creator: "@author_handle"                             # Content creator's Twitter handle
+  facebook_image: "/assets/images/posts/og-1200.jpg"    # Specific override for FB
+  twitter_image: "/assets/images/posts/twitter-2x1.jpg" # Specific override for Twitter
 ---
 ```
 
 ### Disabling for a Specific Page
 
-If you want to disable social metadata for a specific page, you can set `social: false` in the frontmatter:
+If you want to disable social metadata for a specific page (like a private landing page), you can set `social: false` in the frontmatter:
 
 ```yaml
 ---
@@ -70,38 +71,33 @@ social: false
 ---
 ```
 
-Or use the extended syntax:
-
-```yaml
----
-title: "Private Page"
-social:
-  enabled: false
----
-```
-
-### Supported Fields
+### Supported Fields & Fallbacks
 
 Here is the full list of frontmatter keys we look for and what they map to:
 
-| Frontmatter Key | Maps To (Open Graph) | Maps To (Twitter) | Notes |
-| :--- | :--- | :--- | :--- |
-| `social.title` | `og:title` | `twitter:title` | Overrides `title`. |
-| `social.description` | `og:description` | `twitter:description` | Overrides `description`. |
-| `social.image` | `og:image` | `twitter:image` | Generic image for all networks. |
-| `social.facebook_image` | `og:image` | - | Specific override for Facebook/LinkedIn. |
-| `social.twitter_image` | - | `twitter:image` | Specific override for Twitter. |
-| `social.image_alt` | `og:image:alt` | `twitter:image:alt` | Accessibility text for the image. |
-| `social.creator` | - | `twitter:creator` | Twitter handle of the content creator. |
-| `url` | `og:url` | - | The canonical URL of the page. |
-| `type` | `og:type` | - | Defaults to `website`. Use `article` for posts. |
+| Frontmatter Key | Fallback Chain (checked in order) | Maps To |
+| :--- | :--- | :--- |
+| **Title** | `social.title` → `title` → `site.title` | `og:title`, `twitter:title` |
+| **Description** | `social.description` → `description` → `site.description` | `og:description`, `twitter:description` |
+| **Image** | `social.image` → `image` → `hero` → `social.default_image` | `og:image`, `twitter:image` |
+| **Facebook Image** | `social.facebook_image` → *Generic Image* | `og:image` |
+| **Twitter Image** | `social.twitter_image` → *Generic Image* | `twitter:image` |
+| **Alt Text** | `social.image_alt` → `image_alt` | `og:image:alt`, `twitter:image:alt` |
+| **Creator** | `social.creator` → `author` | `twitter:creator` |
+| **URL** | `url` | `og:url` |
+| **Type** | `type` (defaults to `website`) | `og:type` |
 
-### Automatic Defaults
+---
 
-If you leave something out, don't worry. We've got your back:
-*   **Missing Title?** We'll use the page title, then the site's name.
-*   **Missing Image?** We check for `social.image`, then `image`, then `hero` in your frontmatter. If none of those exist, we use the `default_image` from your config.
-*   **Twitter Card Type?** We automatically set `twitter:card` to `summary_large_image` so your images look big and bold.
+## Site Auditing
+
+This feature integrates with the StaticForge Auditor. When you run `staticforge site:audit`, we will check your compiled pages for missing social tags.
+
+The auditor checks for the presence of:
+*   Open Graph: `og:title`, `og:description`, `og:image`, `og:url`
+*   Twitter: `twitter:card`, `twitter:title`, `twitter:description`, `twitter:image`
+
+If any of these are missing, you will see a warning in your audit report.
 
 ---
 
