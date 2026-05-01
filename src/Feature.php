@@ -44,12 +44,12 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
         return [];
     }
 
-    public function register(EventManager $eventManager, Container $container): void
+    public function register(EventManager $eventManager): void
     {
-        parent::register($eventManager, $container);
+        parent::register($eventManager);
         $eventManager->registerListener('SEO_AUDIT_PAGE', [$this, 'auditPage']);
 
-        $this->logger = $container->get('logger');
+        $this->logger = $this->container->get('logger');
         $this->generator = new MetadataGenerator();
 
         $this->logger->log('INFO', 'SocialMetadata Feature registered');
