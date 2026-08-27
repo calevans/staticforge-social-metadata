@@ -24,5 +24,10 @@
         "staticforge": {
             "feature": "Calevans\\StaticForgeSocialMetadata\\Feature"
         }
+    },
+    "config": {
+        "allow-plugins": {
+            "eicc/staticforge-installer": true
+        }
     }
 }

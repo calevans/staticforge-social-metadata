@@ -75,16 +75,89 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
         }
 
         // Inject into <head>
-        $pos = stripos($html, '</head>');
+        $pos = $this->findInsertionOffset($html, '</head>');
         if ($pos !== false) {
-            $event->renderedContent = substr_replace($html, "\n" . $metadata . "\n</head>", $pos, 7);
+            $event->renderedContent = substr_replace($html, "\n" . $metadata . "\n", $pos, 0);
             $this->logger->log('DEBUG', "Injected social metadata for " . basename($filePath));
         } else {
+            // Unlike GoogleAnalytics (which falls back to </body> or appends
+            // at the end), we skip outright: an og:/twitter: meta tag is only
+            // valid inside <head>, so there is no safe fallback location.
             $this->logger->log(
                 'WARNING',
                 "Could not find </head> tag in " . basename($filePath) . ", skipping metadata injection"
             );
         }
+    }
+
+    /**
+     * Locates the first occurrence of $tag that is not inside a
+     * <script>...</script> region, a <style>...</style> region, or an
+     * <!-- ... --> comment, so injection never lands inside a string
+     * literal, style rule, or dead comment. A single forward scan over
+     * the tokens that can open/close those regions (plus the target tag
+     * itself), tracking which region (if any) is currently open.
+     */
+    private function findInsertionOffset(string $content, string $tag): int|false
+    {
+        $pattern = '/<!--|-->|<script\b[^>]*>|<\/script\s*>|<style\b[^>]*>|<\/style\s*>|'
+            . preg_quote($tag, '/') . '/i';
+
+        if (preg_match_all($pattern, $content, $matches, PREG_OFFSET_CAPTURE) === false) {
+            return false;
+        }
+
+        /** @var list<array{0: string, 1: int}> $tokens */
+        $tokens = $matches[0];
+
+        $inScript = false;
+        $inStyle = false;
+        $inComment = false;
+
+        foreach ($tokens as [$token, $offset]) {
+            $lower = strtolower($token);
+
+            if ($inComment) {
+                if ($lower === '-->') {
+                    $inComment = false;
+                }
+                continue;
+            }
+
+            if ($inScript) {
+                if (str_starts_with($lower, '</script')) {
+                    $inScript = false;
+                }
+                continue;
+            }
+
+            if ($inStyle) {
+                if (str_starts_with($lower, '</style')) {
+                    $inStyle = false;
+                }
+                continue;
+            }
+
+            if ($lower === '<!--') {
+                $inComment = true;
+                continue;
+            }
+
+            if (str_starts_with($lower, '<script')) {
+                $inScript = true;
+                continue;
+            }
+
+            if (str_starts_with($lower, '<style')) {
+                $inStyle = true;
+                continue;
+            }
+
+            // Only the target tag can reach here: it's a live match.
+            return $offset;
+        }
+
+        return false;
     }
 
     /**
