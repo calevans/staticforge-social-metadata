@@ -80,11 +80,23 @@ class MetadataGenerator
 
         // Images
         // 1. Generic Social Image (social.image -> image -> hero -> default)
-        $genericImage = $pageSocial['image']
-            ?? $frontmatter['image']
-            ?? $frontmatter['hero']
-            ?? $socialConfig['default_image']
-            ?? '';
+        // `hero` is often a map (title, subtitle, image) rather than a bare path.
+        $hero = $frontmatter['hero'] ?? null;
+        $heroImage = is_array($hero) ? ($hero['image'] ?? null) : $hero;
+
+        $genericImage = '';
+        $candidates = [
+            $pageSocial['image'] ?? null,
+            $frontmatter['image'] ?? null,
+            $heroImage,
+            $socialConfig['default_image'] ?? null,
+        ];
+        foreach ($candidates as $candidate) {
+            if (is_string($candidate) && $candidate !== '') {
+                $genericImage = $candidate;
+                break;
+            }
+        }
 
         // 2. Open Graph Image (social.facebook_image -> generic)
         $ogImage = $pageSocial['facebook_image'] ?? $genericImage;

@@ -79,7 +79,7 @@ Here is the full list of frontmatter keys we look for and what they map to:
 | :--- | :--- | :--- |
 | **Title** | `social.title` → `title` → `site.title` | `og:title`, `twitter:title` |
 | **Description** | `social.description` → `description` → `site.description` | `og:description`, `twitter:description` |
-| **Image** | `social.image` → `image` → `hero` → `social.default_image` | `og:image`, `twitter:image` |
+| **Image** | `social.image` → `image` → `hero` (or `hero.image` when `hero` is a map) → `social.default_image` | `og:image`, `twitter:image` |
 | **Facebook Image** | `social.facebook_image` → *Generic Image* | `og:image` |
 | **Twitter Image** | `social.twitter_image` → *Generic Image* | `twitter:image` |
 | **Alt Text** | `social.image_alt` → `image_alt` | `og:image:alt`, `twitter:image:alt` |

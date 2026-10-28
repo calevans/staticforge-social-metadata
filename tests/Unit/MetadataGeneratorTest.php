@@ -162,6 +162,23 @@ class MetadataGeneratorTest extends TestCase
         $this->assertStringContainsString('<meta property="og:image" content="/root.jpg">', $html);
     }
 
+    public function testGenerateWithHeroMap(): void
+    {
+        $html = $this->generator->generate(
+            ['hero' => ['title' => 'About', 'subtitle' => 'Sub', 'image' => '/hero-map.jpg']],
+            []
+        );
+        $this->assertStringContainsString('<meta property="og:image" content="/hero-map.jpg">', $html);
+        $this->assertStringContainsString('<meta name="twitter:image" content="/hero-map.jpg">', $html);
+
+        // A hero map without an image falls through to the site default.
+        $html = $this->generator->generate(
+            ['hero' => ['title' => 'About']],
+            ['social' => ['default_image' => '/default.jpg']]
+        );
+        $this->assertStringContainsString('<meta property="og:image" content="/default.jpg">', $html);
+    }
+
     public function testGenerateDisabledSiteWide(): void
     {
         $frontmatter = ['title' => 'Test'];
